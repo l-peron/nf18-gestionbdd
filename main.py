@@ -52,24 +52,49 @@ def userInterface(raw: List[str]):
         print("5. Modifier votre profil")
         print("6. Supprimer votre profil")
 
-    pass
+def accountsInterface():
+    print('Compte Courants:')
+    print('Compte Epargne:')
+    print('Compte Revolving:')
 
 
 def displayAccount(num: int, type: str):
+    raws = []
+    if type == 'courant':
+        raws = req.getUserCourantAccounts(num)
+        for raw in raws:
+            print(f"ID: {raw[0]}, Solde: {raw[0]}")
+    elif type == 'epargne':
+        raws = req.getUserEpargneAccounts(num)
+        for raw in raws:
+            print(f"ID: {raw[0]}, Solde: {raw[0]}")
+    elif type == 'revolving':
+        raws = req.getUserRevolvingAccounts(num)
+        for raw in raws:
+            print(f"ID: {raw[0]}, Solde: {raw[0]}")
+    if not raws:
+        return print(f'Auncun compte {type} trouvé')
 
-    pass
 
 
 def makeOperation(num: int):
     pass
 
 
-def addAccount(num: int):
-    pass
+def addAccount(num: int, id: int):
+    result = req.addUserToAccount(num, id, 'courant')
+    if result:
+        return print("Vous avez bien été ajouté à ce compte")
+    else:
+        return print("Ce compte n'existe pas ou il vous appartient déjà")
 
 
 def removeAccount(num: int):
-    pass
+    result = req.removeUserFromAccount(num, id, 'courant')
+    if result:
+        return print("Vous avez bien été retiré de ce compte")
+    else:
+        return print("Ce compte n'existe pas ou il ne vous appartient pas")
 
 
 def modifyProfile(num: int):

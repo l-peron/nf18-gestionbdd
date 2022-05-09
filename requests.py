@@ -59,6 +59,7 @@ class Requests:
             )
             return True
         except sql.Error as e:
+            self.utils.writeLogs(e)
             return False
 
     def modifyUser(self, num: int, prenom: str, adresse: str) -> bool:
@@ -69,6 +70,7 @@ class Requests:
             )
             return True
         except sql.Error as e:
+            self.utils.writeLogs(e)
             return False
 
     def deleteUser(self, num: int) -> bool:
@@ -76,6 +78,7 @@ class Requests:
             self.cur.execute("DELETE FROM clients WHERE telephone=%s", (num,))
             return True
         except sql.Error as e:
+            self.utils.writeLogs(e)
             return False
 
     def getUserCourantAccounts(self, num: int):
@@ -84,15 +87,32 @@ class Requests:
                 "SELECT * FROM appartenance WHERE client=%s INNER JOIN comptescourant ON appartenance.courant = comptescourant.id",
                 (num,),
             )
-            return True
+            return self.cur.fetchall()
         except sql.Error as e:
-            return False
+            self.utils.writeLogs(e)
+            return None
 
     def getUserEpargneAccounts(self, num: int):
-        pass
+        try:
+            self.cur.execute(
+                "SELECT * FROM appartenance WHERE client=%s INNER JOIN comptesepargne ON appartenance.epargne = comptescourant.epargne",
+                (num,),
+            )
+            return self.cur.fetchall()
+        except sql.Error as e:
+            self.utils.writeLogs(e)
+            return None
 
     def getUserRevolvingAccounts(self, num: int):
-        pass
+        try:
+            self.cur.execute(
+                "SELECT * FROM appartenance WHERE client=%s INNER JOIN comptescrevolving ON appartenance.revolving = comptesrevolving.id",
+                (num,),
+            )
+            return self.cur.fetchall()
+        except sql.Error as e:
+            self.utils.writeLogs(e)
+            return None
 
     # CREATION DES COMPTES BANCAIRES
 
@@ -106,6 +126,7 @@ class Requests:
             self.addUserToAccount(num, id, "courant")
             return True
         except sql.Error as e:
+            self.utils.writeLogs(e)
             return False
 
     def createRevolvingAccount(
@@ -120,7 +141,7 @@ class Requests:
             self.addUserToAccount(num, id, "revolving")
             return True
         except sql.Error as e:
-            print(e)
+            self.utils.writeLogs(e)
             return False
 
     def createEpargneAccount(
@@ -135,7 +156,7 @@ class Requests:
             self.addUserToAccount(num, id, "epargne")
             return True
         except sql.Error as e:
-            print(e)
+            self.utils.writeLogs(e)
             return False
 
     # MODIFICATION DES COMPTES BANCAIRES
@@ -147,6 +168,7 @@ class Requests:
             )
             return True
         except sql.Error as e:
+            self.utils.writeLogs(e)
             return False
 
     def modifyRevolvingAccount(self, id: int, taux: int) -> bool:
@@ -156,6 +178,7 @@ class Requests:
             )
             return True
         except sql.Error as e:
+            self.utils.writeLogs(e)
             return False
 
     def modifyEpargneAccount(self, num: int, interet: int) -> bool:
@@ -165,7 +188,36 @@ class Requests:
             )
             return True
         except sql.Error as e:
+            self.utils.writeLogs(e)
             return False
+
+    # RECUPERATION DES COMPTES BANCAIRES
+
+    def getCourantAccounts(self):
+        try:
+            self.cur.execute("SELECT * FROM comptescourant")
+            return self.cur.fetchall()
+        except sql.Error as e:
+            self.utils.writeLogs(e)
+            return False
+
+    def getEpargneAccounts(self):
+        try:
+            self.cur.execute("SELECT * FROM comptesepargne")
+            return self.cur.fetchall()
+        except sql.Error as e:
+            self.utils.writeLogs(e)
+            return False
+
+    def getRevolvingAccounts(self):
+        try:
+            self.cur.execute("SELECT * FROM comptesrevolving")
+            return self.cur.fetchall()
+        except sql.Error as e:
+            self.utils.writeLogs(e)
+            return False
+
+
 
     # SUPPRESION D'UN COMPTE
 
@@ -191,7 +243,7 @@ class Requests:
             self.__updateSoldById(compte, type, montant)
             return True
         except sql.Error as e:
-            print(e)
+            self.utils.writeLogs(e)
             return False
         pass
 
