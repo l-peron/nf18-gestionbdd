@@ -84,7 +84,7 @@ class Requests:
     def getUserCourantAccounts(self, num: int):
         try:
             self.cur.execute(
-                "SELECT * FROM appartenance WHERE client=%s INNER JOIN comptescourant ON appartenance.courant = comptescourant.id",
+                "SELECT * FROM appartenance INNER JOIN comptescourant ON appartenance.courant = comptescourant.id WHERE client=%s",
                 (num,),
             )
             return self.cur.fetchall()
@@ -95,7 +95,7 @@ class Requests:
     def getUserEpargneAccounts(self, num: int):
         try:
             self.cur.execute(
-                "SELECT * FROM appartenance WHERE client=%s INNER JOIN comptesepargne ON appartenance.epargne = comptescourant.epargne",
+                "SELECT * FROM appartenance INNER JOIN comptesepargne ON appartenance.epargne = comptesepargne.id WHERE client=%s",
                 (num,),
             )
             return self.cur.fetchall()
@@ -106,7 +106,7 @@ class Requests:
     def getUserRevolvingAccounts(self, num: int):
         try:
             self.cur.execute(
-                "SELECT * FROM appartenance WHERE client=%s INNER JOIN comptescrevolving ON appartenance.revolving = comptesrevolving.id",
+                "SELECT * FROM appartenance INNER JOIN comptescrevolving ON appartenance.revolving = comptesrevolving.id WHERE client=%s",
                 (num,),
             )
             return self.cur.fetchall()
@@ -243,6 +243,7 @@ class Requests:
             self.__updateSoldById(compte, type, montant)
             return True
         except sql.Error as e:
+            print(e)
             self.utils.writeLogs(e)
             return False
         pass
