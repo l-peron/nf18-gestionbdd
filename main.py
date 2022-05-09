@@ -173,4 +173,4 @@ def deleteProfile(num: int):
 
 
 if __name__ == "__main__":
-    main()
+    print(req.createOperation(12, 'virement', 'epargne', 200))

@@ -240,7 +240,7 @@ class Requests:
                     self.operation_state[0],
                 ),
             )
-            self.__updateSoldById(compte, type, montant)
+            self.__updateSoldById(compte, acc_type, montant)
             return True
         except sql.Error as e:
             print(e)
@@ -304,7 +304,7 @@ class Requests:
 
     def __updateSoldById(self, id: int, type: str, var: int) -> bool:
         try:
-            self.cur.execute("SELECT solde FROM %s WHERE id =%s", (AsIs(type), id))
+            self.cur.execute("SELECT solde FROM %s WHERE id =%s", (AsIs('comptes'+type), id))
             raw = self.cur.fetchone()
             self.cur.execute(
                 "UPDATE %s SET solde=%s WHERE id=%s",
@@ -312,4 +312,5 @@ class Requests:
             )
             return True
         except sql.Error as e:
+            print(e)
             return False
