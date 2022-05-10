@@ -15,7 +15,7 @@ class Requests:
         self.account_state = ["Ouvert", "Bloqué", "Fermé"]
         self.operation_state = ["Traitée", "Non Traitée"]
         self.account_type = ["courant", "revolving", "epargne"]
-        self.operation_type = ["cartebleu", "virement", "chequier", "espece"]
+        self.operation_type = ["cartebleue", "virement", "chequier", "guichet"]
 
     def __connect(self):
         try:
@@ -33,25 +33,11 @@ class Requests:
         else:
             return None
 
+    # GESTION D'UN UTILISATEUR
+
     def getUserByNum(self, num: int) -> List[str]:
         self.cur.execute("SELECT * FROM clients WHERE telephone = %s", (num,))
         return self.cur.fetchone()
-
-    def getUserAccountsId(self, num: int):
-        self.cur.execute(
-            "SELECT Courant, Revolving, Epargne FROM Appartenance WHERE client = %s",
-            (num,),
-        )
-        return self.__getAccounts(self.cur.fetchall())
-
-    def __getAccounts(self, ids):
-        accounts = []
-        for elem, id in zip(self.account_type, ids):
-            self.cur.execute(f"SELECT * FROM {elem} WHERE id = {id}")
-            accounts.append(self.cur.fetchone())
-        return accounts
-
-    # GESTION D'UN UTILISATEUR
 
     def createUser(self, num: int, prenom: str, adresse: str) -> bool:
         try:
@@ -82,33 +68,13 @@ class Requests:
             self.utils.writeLogs(e)
             return False
 
-    def getUserCourantAccounts(self, num: int):
-        try:
-            self.cur.execute(
-                "SELECT * FROM appartenance INNER JOIN comptescourant ON appartenance.courant = comptescourant.id WHERE client=%s",
-                (num,),
-            )
-            return self.cur.fetchall()
-        except sql.Error as e:
-            self.utils.writeLogs(e)
+    def getUserAccounts(self, num: int, type: str) -> List[List[str]]:
+        if type not in self.account_type:
             return None
-
-    def getUserEpargneAccounts(self, num: int):
         try:
             self.cur.execute(
-                "SELECT * FROM appartenance INNER JOIN comptesepargne ON appartenance.epargne = comptesepargne.id WHERE client=%s",
-                (num,),
-            )
-            return self.cur.fetchall()
-        except sql.Error as e:
-            self.utils.writeLogs(e)
-            return None
-
-    def getUserRevolvingAccounts(self, num: int):
-        try:
-            self.cur.execute(
-                "SELECT * FROM appartenance INNER JOIN comptescrevolving ON appartenance.revolving = comptesrevolving.id WHERE client=%s",
-                (num,),
+                "SELECT * FROM appartenance INNER JOIN %s ON appartenance.%s = %s.id WHERE client=%s",
+                (AsIs("comptes"+type), AsIs(type),AsIs("comptes"+type), num),
             )
             return self.cur.fetchall()
         except sql.Error as e:
@@ -118,6 +84,16 @@ class Requests:
     def getUserOperations(self, num: int, type: str) -> List[List[str]]:
         if type not in self.operation_type:
             return None
+        try:
+            self.cur.execute(
+                "SELECT * FROM %s WHERE client=%s",
+                (AsIs("operations" + type), num)
+            )
+            return self.cur.fetchall()
+        except sql.Error as e:
+            self.utils.writeLogs(e)
+            return None
+
 
     # CREATION DES COMPTES BANCAIRES
 
@@ -198,31 +174,15 @@ class Requests:
 
     # RECUPERATION DES COMPTES BANCAIRES
 
-    def getCourantAccounts(self):
+    def getAccountsByType(self, type: str):
+        if type not in self.account_type:
+            return None
         try:
-            self.cur.execute("SELECT * FROM comptescourant")
+            self.cur.execute("SELECT * FROM comptes%s", (AsIs(type),))
             return self.cur.fetchall()
         except sql.Error as e:
             self.utils.writeLogs(e)
             return False
-
-    def getEpargneAccounts(self):
-        try:
-            self.cur.execute("SELECT * FROM comptesepargne")
-            return self.cur.fetchall()
-        except sql.Error as e:
-            self.utils.writeLogs(e)
-            return False
-
-    def getRevolvingAccounts(self):
-        try:
-            self.cur.execute("SELECT * FROM comptesrevolving")
-            return self.cur.fetchall()
-        except sql.Error as e:
-            self.utils.writeLogs(e)
-            return False
-
-
 
     # SUPPRESION D'UN COMPTE
 
@@ -254,16 +214,25 @@ class Requests:
             return False
         pass
 
-    def operationCheque(self):
-        pass
+    def getOperationByDate(self, date: str, type: str):
+        if type not in self.operation_type:
+            return None
+        try:
+            self.cur.execute(
+                "SELECT * FROM %s WHERE date=%s",
+                (AsIs("operations" + type), date)
+            )
+            return self.cur.fetchone()
+        except sql.Error as e:
+            self.utils.writeLogs(e)
+            return None
 
-    def operationGuichet(self):
-        pass
-        pass
 
     # GESTION DES RELATIONS COMPTES - CLIENTS
 
     def addUserToAccount(self, num: int, id: int, type: str) -> bool:
+        if type not in self.account_type:
+            return None
         try:
             self.cur.execute(
                 "INSERT INTO appartenance (client, %s) VALUES (%s, %s)",
@@ -274,6 +243,8 @@ class Requests:
             return False
 
     def removeUserFromAccount(self, num: int, id: int, type: str) -> bool:
+        if type not in self.account_type:
+            return None
         try:
             self.cur.execute(
                 "DELETE FROM appartenance WHERE client=%s AND %s=%s",

@@ -1,20 +1,24 @@
 import requests as r
 from typing import List
+import display as d
 
 req = r.Requests()
+disp = d.Display(req)
 
 
 def main():
 
     i=0
 
-    while i != 3:
+    while i != 5:
         print("GESTION DE COMPTES BANCAIRES")
         print("---------------------------- \n")
         print("Selectionnez l'action souhaitée")
         print("1.Connectez vous")
         print("2.Inscrivez vous")
-        print("3.Arreter le programme")
+        print("3. Modifier un profil")
+        print("4. Supprimer un profil")
+        print("5.Arreter le programme")
 
         i = int(input())
 
@@ -37,128 +41,54 @@ def main():
                 print("Le client a bien été crée")
             else:
                 print("Client déjà existant")
+        elif i == 3:
+            modifyProfile(num)
+        elif i==4:
+            deleteProfile(num)
 
 
 def userInterface(raw: List[str]):
     i = 0
-    while i != 7:
+    while i != 10:
         print("---------------------------------------")
         print(
             f"Bonjour {raw[1]}, \n Numéro de téléphone: {raw[0]} \n Adresse: {raw[2]}"
         )
         print("---------------------------------------")
-        print("1. Voir vos comptes et réaliser des opérations")
+        print("1. Voir vos comptes")
         print("2. Voir vos opérations")
         print("3. Ajouter un compte")
         print("4. Retirer un compte")
-        print("6. Modifier votre profil")
-        print("7. Supprimer votre profil")
-        print("8. Se Deconnecter")
+        print("5. Réaliser une opération")
+        print("6. Rechercher une opération")
+        print("7. Rechercher un compte")
+        print("8. Créer un compte")
+
+        print("10. Se Deconnecter")
 
         i = int(input("Choississez l'option: "))
 
-
         if i == 1:
-            displayAccount(raw[0], 'courant')
+            disp.displayUserAccounts(raw[0])
         elif i==2:
-            displayAccount(raw[0], 'epargne')
-        elif i==3:
-            displayAccount(raw[0], 'revolving')
-        elif i==4:
-            type = str(input("Quel type d'opération voulez-vous afficher ? "))
-        elif i==12:
-            accountsInterface(raw)
+            disp.displayUserOperations(raw[0])
+        elif i == 3:
+            disp.displayAllAccounts()
+            addUser(raw[0])
+        elif i == 4:
+            disp.displayUserAccounts(raw[0])
+            removeAccount(raw[0])
         elif i==5:
+            makeOperation(raw[0])
             pass
         elif i==6:
-            modifyProfile(raw[0])
+            findOperation()
         elif i==7:
-            deleteProfile(raw[0])
+            findCompte()
+        elif i==8:
+            creerCompte(raw[0])
 
-def accountsInterface(user: List[str]):
-    print('-----------------------------------------')
-    print('Compte Courants:')
-    print('-----------------------------------------')
-    raws = req.getCourantAccounts()
-    for raw in raws:
-        printAccount(raw, 'courant', False)
-    print('-----------------------------------------')
-    print('Compte Epargne:')
-    print('-----------------------------------------')
-    raws = req.getEpargneAccounts()
-    for raw in raws:
-        printAccount(raw, 'epargne', False)
-    print('-----------------------------------------')
-    print('Compte Revolving:')
-    print('-----------------------------------------')
-    raws = req.getRevolvingAccounts()
-    for raw in raws:
-        printAccount(raw, 'revolving', False)
-    print('-----------------------------------------')
-
-    type = str(input("Quel type de compte voulez-vous ajouter à l'utilisateur ? "))
-    id = str(input("Quel est l'ID de ce compte ? "))
-
-    result = req.addUserToAccount(raw[0], id, type)
-    if result:
-        print("L'utilisateur a bien été ajouté")
-    else:
-        print("Erreur dans l'ajout de l'utilisateur")
-
-def userAccountsInterface(num: int, ):
-    displayAccount(num, 'courant')
-    displayAccount(num, 'epargne')
-    displayAccount(num, 'revolving')
-
-def displayAccount(num: int, type: str):
-    raws = []
-    if type == 'courant':
-        raws = req.getUserCourantAccounts(num)
-    elif type == 'epargne':
-        raws = req.getUserEpargneAccounts(num)
-    elif type == 'revolving':
-        raws = req.getUserRevolvingAccounts(num)
-    if not raws:
-        return print(f'Auncun compte {type} trouvé')
-
-    for raw in raws:
-        print(f'---------- Compte {type}')
-        printAccount(raw, type, True)
-
-
-def printAccount(raw: List[str], type: str, join: bool) -> None:
-    d=0
-    if join:
-        d = 4
-    if type == 'courant':
-        print(f"ID: {raw[0+d]}, Statut: {raw[2+d]} Solde: {raw[5+d]}, Decouvert autorisé: {raw[6+d]}, Début découvert: {raw[7+d]}")
-    elif type == 'epargne':
-        print(f"ID: {raw[0+d]}, Statut: {raw[2+d]}, Solde: {raw[5+d]}, Interet: {raw[3+d]}, Plafond: {raw[4+d]}")
-    elif type == 'revolving':
-        print(f"ID: {raw[0+d]}, Statut: {raw[2+d]}, Solde: {raw[5+d]}, Taux: {raw[3+d]}, Montant négocié: {raw[4+d]}")
-    else:
-        print("Bug")
-
-
-def makeOperation(num: int):
-    pass
-
-
-def addAccount(num: int, id: int):
-    result = req.addUserToAccount(num, id, 'courant')
-    if result:
-        return print("Vous avez bien été ajouté à ce compte")
-    else:
-        return print("Ce compte n'existe pas ou il vous appartient déjà")
-
-
-def removeAccount(num: int):
-    result = req.removeUserFromAccount(num, id, 'courant')
-    if result:
-        return print("Vous avez bien été retiré de ce compte")
-    else:
-        return print("Ce compte n'existe pas ou il ne vous appartient pas")
-
+# CONNEXION
 
 def modifyProfile(num: int):
     nom = str(input("Entrez votre prénom et votre nom"))
@@ -170,7 +100,6 @@ def modifyProfile(num: int):
         print("La modification n'a pas fonctionné")
     pass
 
-
 def deleteProfile(num: int):
     result = req.deleteUser(num)
     if result:
@@ -178,6 +107,54 @@ def deleteProfile(num: int):
     else:
         print("Votre compte n'a pas être supprimé")
 
+
+# INTERFACE DE COMPTE
+
+def addUser(num: int):
+    type = str(input("A quel type de compte voulez-vous être ajouté ? "))
+    id = str(input("Quel est l'id de ce compte ? "))
+    result = req.addUserToAccount(num, id, type)
+    if result:
+        return print("Vous avez bien été ajouté à ce compte")
+    else:
+        return print("Ce compte n'existe pas ou il vous appartient déjà")
+
+def removeAccount(num: int):
+    type = str(input("A quel type de compte voulez-vous être retiré ? "))
+    id = str(input("Quel est l'id de ce compte ? "))
+    result = req.removeUserFromAccount(num, id, type)
+    if result:
+        return print("Vous avez bien été retiré de ce compte")
+    else:
+        return print("Ce compte n'existe pas ou il ne vous appartient pas")
+
+def findOperation():
+    type = str(input("Quel type d'opération cherchez-vous ? "))
+    date = str(input("Quelle est la date de cette opération ? "))
+    result = req.getOperationByDate(date, type)
+    disp.printOperation(result, type)
+
+def findCompte():
+    type = str(input("Quel type de compte cherchez-vous ? "))
+    id = str(input("Quel est l'id de ce compte ? "))
+    result = req.getAccountById(id)
+    disp.printAccount(result, result, type, False)
+
+def makeOperation(num: int):
+    typeOperation = str(input("Quel type d'opération voulez-vous faire ? "))
+    montant = int(input("Quel est le montant de l'opération ? "))
+    disp.displayUserAccounts(num)
+    typeCompte = str(input("Sur quel type de compte voulez-vous faire l'opération ? "))
+    id = int(input("Quel est l'id du compte ? "))
+    result = req.createOperation(id, num, typeOperation, typeCompte, montant)
+    if result:
+        return print("L'opération a bien été effectué")
+    else:
+        return print("Erreur dans la réalisation de l'opération")
+
+def creerCompte(num: int):
+    type = str(input("Quel type d'opération cherchez-vous ? "))
+    pass
 
 if __name__ == "__main__":
     main()
