@@ -60,6 +60,7 @@ class Display:
 
     def displayAllAccounts(self):
         raws = []
+        print("---- Affichage de tous les comptes bancaires ----")
         for type in self.account_type:
             raws = self.req.getAccountsByType(type)
             print(f'---------- Compte {type} ----------')
