@@ -4,7 +4,7 @@ from datetime import datetime as dt
 
 class Utils:
     def __init__(self):
-        self.logs = open('logs.txt', 'w')
+        self.logs = open('logs.log', 'a')
         pass
 
     def loadDatas(self) -> Dict[str, str]:
@@ -12,4 +12,9 @@ class Utils:
             return json.loads(json_file.read())
 
     def writeLogs(self, message: str):
-        self.logs.write(f"[{dt.now()}] {str} \n")
+        log = f"[{dt.now()}] {message} \n"
+        print(log)
+        self.logs.write(log)
+
+    def close(self):
+        self.logs.close()

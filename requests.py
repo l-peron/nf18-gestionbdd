@@ -33,6 +33,10 @@ class Requests:
         else:
             return None
 
+    def close(self):
+        self.conn.close()
+        self.utils.close()
+
     # GESTION D'UN UTILISATEUR
 
     def getUserByNum(self, num: int) -> List[str]:

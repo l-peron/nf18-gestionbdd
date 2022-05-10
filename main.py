@@ -8,41 +8,41 @@ disp = d.Display(req)
 
 def main():
 
-    i=0
+    i = 0
 
-    while i != 5:
-        print("GESTION DE COMPTES BANCAIRES")
-        print("---------------------------- \n")
-        print("Selectionnez l'action souhaitée")
-        print("1.Connectez vous")
-        print("2.Inscrivez vous")
-        print("3. Modifier un profil")
-        print("4. Supprimer un profil")
-        print("5.Arreter le programme")
+    try:
+        while True:
+            print("GESTION DE COMPTES BANCAIRES")
+            print("---------------------------- \n")
+            print("Selectionnez l'action souhaitée")
+            print("1. Connectez vous")
+            print("2. Inscrivez vous")
+            print("3. Modifier un profil")
+            print("4. Supprimer un profil")
+            print("5. Arreter le programme")
 
-        if i == 3:
-            return
+            i = int(input())
 
-        if i == 1:
-            num = int(input("Entrez votre numéro de téléphone:"))
-            raw = req.getUserByNum(num)
-            if not raw:
-                print("Compte inexistant")
-            else:
-                userInterface(raw)
-        elif i == 2:
-            num = int(input("Entrez votre numéro de téléphone:"))
-            nom = str(input("Entrez votre prénom et votre nom: "))
-            adresse = str(input("Entrez votre adresse: "))
-            result = req.createUser(num, nom, adresse)
-            if result:
-                print("Le client a bien été crée")
-            else:
-                print("Client déjà existant")
-        elif i == 3:
-            modifyProfile(num)
-        elif i==4:
-            deleteProfile(num)
+            if i == 5:
+                return
+
+            num = int(input("Entrez votre numéro de téléphone: "))
+
+            if i == 1:
+                raw = req.getUserByNum(num)
+                if not raw:
+                    print("Compte inexistant")
+                else:
+                    userInterface(raw)
+            elif i == 2:
+                createProfile(num)
+            elif i == 3:
+                modifyProfile(num)
+            elif i==4:
+                deleteProfile(num)
+    finally:
+        req.close()
+
 
 
 def userInterface(raw: List[str]):
@@ -87,6 +87,15 @@ def userInterface(raw: List[str]):
             creerCompte(raw[0])
 
 # CONNEXION
+
+def createProfile(num: int):
+    nom = str(input("Entrez votre prénom et votre nom: "))
+    adresse = str(input("Entrez votre adresse: "))
+    result = req.createUser(num, nom, adresse)
+    if result:
+        print("Le client a bien été crée")
+    else:
+        print("Client déjà existant")
 
 def modifyProfile(num: int):
     nom = str(input("Entrez votre prénom et votre nom"))
@@ -151,8 +160,31 @@ def makeOperation(num: int):
         return print("Erreur dans la réalisation de l'opération")
 
 def creerCompte(num: int):
-    type = str(input("Quel type d'opération cherchez-vous ? "))
-    pass
+    typeCompte = str(input("Quel type de compte? "))
+
+    result = None
+    if typeCompte == "epargne":
+        solde = float(input("Solde du compte: "))
+        interet = float(input("Interet mensuel: "))
+        plafond = float(input("Plafond du solde: "))
+        result = req.createEpargneAccount(num, interet, plafond, solde)
+    elif typeCompte == "revolving":
+        solde = float(input("Solde du compte: "))
+        taux = float(input("Taux journalier: "))
+        montant = float(input("Montant minimal: "))
+        result = req.createRevolvingAccount(num, solde, taux, montant)
+    elif typeCompte == "courant":
+        solde = float(input("Solde du compte: "))
+        decouvert = float(input("Decouvert maximal: "))
+        result = req.createCourantAccount(num, solde, decouvert)
+    else:
+        print("Le type de compte est invalide")
+        return
+
+    if result:
+        print("Le compte a bien été crée")
+    else:
+        print("La création du compte a echoué")
 
 if __name__ == "__main__":
     main()
