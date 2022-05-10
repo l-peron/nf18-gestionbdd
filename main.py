@@ -47,12 +47,10 @@ def userInterface(raw: List[str]):
             f"Bonjour {raw[1]}, \n Numéro de téléphone: {raw[0]} \n Adresse: {raw[2]}"
         )
         print("---------------------------------------")
-        print("1. Afficher vos comptes Courants")
-        print("2. Afficher vos comptes Epargnes")
-        print("3. Afficher vos comptes Revolvings")
-        print("4. Ajouter un propriétaire de compte bancaire")
-        print("5. Supprimer un propriétaire de compte bancaire")
-        print("5. Réaliser une  opération")
+        print("1. Voir vos comptes et réaliser des opérations")
+        print("2. Voir vos opérations")
+        print("3. Ajouter un compte")
+        print("4. Retirer un compte")
         print("6. Modifier votre profil")
         print("7. Supprimer votre profil")
         print("8. Se Deconnecter")
@@ -67,6 +65,8 @@ def userInterface(raw: List[str]):
         elif i==3:
             displayAccount(raw[0], 'revolving')
         elif i==4:
+            type = str(input("Quel type d'opération voulez-vous afficher ? "))
+        elif i==12:
             accountsInterface(raw)
         elif i==5:
             pass
@@ -75,25 +75,25 @@ def userInterface(raw: List[str]):
         elif i==7:
             deleteProfile(raw[0])
 
-def accountsInterface(raw: List[str]):
+def accountsInterface(user: List[str]):
     print('-----------------------------------------')
     print('Compte Courants:')
     print('-----------------------------------------')
     raws = req.getCourantAccounts()
     for raw in raws:
-        printAccount(raw, 'courant')
+        printAccount(raw, 'courant', False)
     print('-----------------------------------------')
     print('Compte Epargne:')
     print('-----------------------------------------')
     raws = req.getEpargneAccounts()
     for raw in raws:
-        printAccount(raw, 'epargne')
+        printAccount(raw, 'epargne', False)
     print('-----------------------------------------')
     print('Compte Revolving:')
     print('-----------------------------------------')
     raws = req.getRevolvingAccounts()
     for raw in raws:
-        printAccount(raw, 'revolving')
+        printAccount(raw, 'revolving', False)
     print('-----------------------------------------')
 
     type = str(input("Quel type de compte voulez-vous ajouter à l'utilisateur ? "))
@@ -105,7 +105,10 @@ def accountsInterface(raw: List[str]):
     else:
         print("Erreur dans l'ajout de l'utilisateur")
 
-
+def userAccountsInterface(num: int, ):
+    displayAccount(num, 'courant')
+    displayAccount(num, 'epargne')
+    displayAccount(num, 'revolving')
 
 def displayAccount(num: int, type: str):
     raws = []
@@ -119,16 +122,20 @@ def displayAccount(num: int, type: str):
         return print(f'Auncun compte {type} trouvé')
 
     for raw in raws:
-        printAccount(raw, type)
+        print(f'---------- Compte {type}')
+        printAccount(raw, type, True)
 
 
-def printAccount(raw: List[str], type: str) -> None:
+def printAccount(raw: List[str], type: str, join: bool) -> None:
+    d=0
+    if join:
+        d = 4
     if type == 'courant':
-        print(f"ID: {raw[4]}, Statut: {raw[6]} Solde: {raw[9]}, Decouvert autorisé: {raw[10]}, Début découvert: {raw[11]}")
+        print(f"ID: {raw[0+d]}, Statut: {raw[2+d]} Solde: {raw[5+d]}, Decouvert autorisé: {raw[6+d]}, Début découvert: {raw[7+d]}")
     elif type == 'epargne':
-        print(f"ID: {raw[4]}, Statut: {raw[6]}, Solde: {raw[9]}, Interet: {raw[7]}, Plafond: {raw[8]}")
+        print(f"ID: {raw[0+d]}, Statut: {raw[2+d]}, Solde: {raw[5+d]}, Interet: {raw[3+d]}, Plafond: {raw[4+d]}")
     elif type == 'revolving':
-        print(f"ID: {raw[4]}, Statut: {raw[6]}, Solde: {raw[9]}, Taux: {raw[7]}, Montant négocié: {raw[8]}")
+        print(f"ID: {raw[0+d]}, Statut: {raw[2+d]}, Solde: {raw[5+d]}, Taux: {raw[3+d]}, Montant négocié: {raw[4+d]}")
     else:
         print("Bug")
 
@@ -173,4 +180,4 @@ def deleteProfile(num: int):
 
 
 if __name__ == "__main__":
-    print(req.createOperation(12, 'virement', 'epargne', 200))
+    main()

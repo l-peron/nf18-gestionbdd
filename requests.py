@@ -15,6 +15,7 @@ class Requests:
         self.account_state = ["Ouvert", "Bloqué", "Fermé"]
         self.operation_state = ["Traitée", "Non Traitée"]
         self.account_type = ["courant", "revolving", "epargne"]
+        self.operation_type = ["cartebleu", "virement", "chequier", "espece"]
 
     def __connect(self):
         try:
@@ -112,6 +113,10 @@ class Requests:
             return self.cur.fetchall()
         except sql.Error as e:
             self.utils.writeLogs(e)
+            return None
+
+    def getUserOperations(self, num: int, type: str) -> List[List[str]]:
+        if type not in self.operation_type:
             return None
 
     # CREATION DES COMPTES BANCAIRES
@@ -226,11 +231,11 @@ class Requests:
 
     # Insertion d'une opération
 
-    def createOperation(self, compte: int, op_type: str, acc_type: str, montant: int):
+    def createOperation(self, compte: int, client: int, op_type: str, acc_type: str, montant: int):
         id = self.__generateOperationId()
         try:
             self.cur.execute(
-                "INSERT INTO %s (id, %s, montant, etat, date) VALUES (%s, %s, %s, %s, current_timestamp)",
+                "INSERT INTO %s (id, %s, montant, etat, date, client) VALUES (%s, %s, %s, %s, current_timestamp, %s)",
                 (
                     AsIs("operations" + op_type),
                     AsIs(acc_type),
@@ -238,6 +243,7 @@ class Requests:
                     compte,
                     montant,
                     self.operation_state[0],
+                    client
                 ),
             )
             self.__updateSoldById(compte, acc_type, montant)
