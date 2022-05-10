@@ -20,20 +20,18 @@ def main():
         print("4. Supprimer un profil")
         print("5.Arreter le programme")
 
-        i = int(input())
-
         if i == 3:
             return
 
-        num = int(input("Entrez votre numéro de téléphone:"))
-
         if i == 1:
+            num = int(input("Entrez votre numéro de téléphone:"))
             raw = req.getUserByNum(num)
             if not raw:
                 print("Compte inexistant")
             else:
                 userInterface(raw)
         elif i == 2:
+            num = int(input("Entrez votre numéro de téléphone:"))
             nom = str(input("Entrez votre prénom et votre nom: "))
             adresse = str(input("Entrez votre adresse: "))
             result = req.createUser(num, nom, adresse)
