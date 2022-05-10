@@ -15,7 +15,7 @@ class Requests:
         self.account_state = ["Ouvert", "Bloqué", "Fermé"]
         self.operation_state = ["Traitée", "Non Traitée"]
         self.account_type = ["courant", "revolving", "epargne"]
-        self.operation_type = ["cartebleue", "virement", "chequier", "guichet"]
+        self.operation_type = ["cartebleue", "virement", "cheque", "guichet"]
 
     def __connect(self):
         try:

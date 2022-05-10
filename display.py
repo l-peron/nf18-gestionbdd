@@ -4,7 +4,7 @@ class Display:
     def __init__(self, req):
         self.req = req
         self.account_type = ["courant", "revolving", "epargne"]
-        self.operation_type = ["cartebleue", "virement", "chequier", "guichet"]
+        self.operation_type = ["cartebleue", "virement", "cheque", "guichet"]
 
     def printOperation(self, raw: List[str], type: str) -> None:
         if not raw:
