@@ -5,6 +5,7 @@ import display as d
 req = r.Requests()
 disp = d.Display(req)
 
+
 def main():
 
     i = 0
@@ -37,10 +38,14 @@ def main():
                 createProfile(num)
             elif i == 3:
                 modifyProfile(num)
-            elif i==4:
+            elif i == 4:
                 deleteProfile(num)
     finally:
         req.close()
+
+
+qType = "A quel type de compte voulez-vous être ajouté/retiré ? "
+qId = "Quel est l'id de ce compte ? "
 
 
 def userInterface(raw: List[str]):
@@ -70,36 +75,38 @@ def userInterface(raw: List[str]):
 
         if i == 1:
             disp.displayUserAccounts(raw[0])
-        elif i==2:
+        elif i == 2:
             disp.displayUserOperations(raw[0])
         elif i == 3:
             creerCompte(raw[0])
         elif i == 4:
             disp.displayUserAccounts(raw[0])
             supprimerCompte(raw[0])
-        elif i==5:
+        elif i == 5:
             disp.displayAllAccounts()
             addUser(raw[0])
-        elif i==6:
+        elif i == 6:
             disp.displayUserAccounts(raw[0])
             removeAccount(raw[0])
-        elif i==7:
+        elif i == 7:
             disp.displayUserAccounts(raw[0])
             modifierStatutCompte(raw[0])
-        elif i==8:
+        elif i == 8:
             makeOperation(raw[0])
-        elif i==9:
+        elif i == 9:
             disp.displayUntreatedUserOperations(raw[0])
             traiterOperation(raw[0])
-        elif i==10:
+        elif i == 10:
             disp.displayUserOperations(raw[0])
             supprimerOperation(raw[0])
-        elif i==11:
+        elif i == 11:
             findCompte()
-        elif i==12:
+        elif i == 12:
             findOperation()
 
+
 # CONNEXION
+
 
 def createProfile(num: int):
     nom = str(input("Entrez votre prénom et votre nom: "))
@@ -110,6 +117,7 @@ def createProfile(num: int):
     else:
         print("Client déjà existant")
 
+
 def modifyProfile(num: int):
     nom = str(input("Entrez votre prénom et votre nom"))
     adresse = str(input("Entrez votre adresse"))
@@ -118,6 +126,7 @@ def modifyProfile(num: int):
         print("La modification a fonctionné")
     else:
         print("La modification n'a pas fonctionné")
+
 
 def deleteProfile(num: int):
     result = req.deleteUser(num)
@@ -129,23 +138,26 @@ def deleteProfile(num: int):
 
 # INTERFACE DE COMPTE
 
+
 def addUser(num: int):
-    type = str(input("A quel type de compte voulez-vous être ajouté ? "))
-    id = str(input("Quel est l'id de ce compte ? "))
+    type = str(input(qType))
+    id = str(input(qId))
     result = req.addUserToAccount(num, id, type)
     if result:
         return print("Vous avez bien été ajouté à ce compte")
     else:
         return print("Ce compte n'existe pas ou il vous appartient déjà")
 
+
 def removeAccount(num: int):
-    type = str(input("A quel type de compte voulez-vous être retiré ? "))
-    id = str(input("Quel est l'id de ce compte ? "))
+    type = str(input(qType))
+    id = str(input(qId))
     result = req.removeUserFromAccount(num, id, type)
     if result:
         return print("Vous avez bien été retiré de ce compte")
     else:
         return print("Ce compte n'existe pas ou il ne vous appartient pas")
+
 
 def findOperation():
     type = str(input("Quel type d'opération cherchez-vous ? "))
@@ -153,11 +165,13 @@ def findOperation():
     result = req.getOperationByDate(date, type)
     disp.printOperation(result, type)
 
+
 def findCompte():
     type = str(input("Quel type de compte cherchez-vous ? "))
     id = str(input("Quel est l'id de ce compte ? "))
     result = req.getAccountById(id)
     disp.printAccount(result, result, type, False)
+
 
 def makeOperation(num: int):
     typeOperation = str(input("Quel type d'opération voulez-vous faire ? "))
@@ -170,6 +184,7 @@ def makeOperation(num: int):
         return print("L'opération a bien été effectué")
     else:
         return print("Erreur dans la réalisation de l'opération")
+
 
 def creerCompte(num: int):
     typeCompte = str(input("Quel type de compte? "))
@@ -198,6 +213,7 @@ def creerCompte(num: int):
     else:
         print("La création du compte a echoué")
 
+
 def supprimerCompte(num: int):
     typeCompte = str(input("Quel type de compte? "))
     id = str(input("Quel est l'id du compte à supprimer? "))
@@ -207,6 +223,7 @@ def supprimerCompte(num: int):
         print("Compte supprimé avec succès")
     else:
         print("Le compte n'existe pas ou la suppression a échouée")
+
 
 def supprimerOperation(num: int):
     typeOperation = str(input("Quel type d'opération? "))
@@ -218,6 +235,7 @@ def supprimerOperation(num: int):
     else:
         print("L'opération n'existe pas ou la suppression a échouée")
 
+
 def traiterOperation(num: int):
     typeOperation = str(input("Quel est le type d'opération? "))
     id = int(input("Quel est l'id de l'opération? "))
@@ -227,6 +245,7 @@ def traiterOperation(num: int):
         print("L'opération a été traitée")
     else:
         print("Le traitement de l'opération a échoué")
+
 
 def modifierStatutCompte(num: int):
     typeCompte = str(input("Quel type de compte voulez-vous modifier ? "))

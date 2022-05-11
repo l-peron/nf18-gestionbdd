@@ -2,9 +2,10 @@ import json
 from typing import Dict
 from datetime import datetime as dt
 
+
 class Utils:
     def __init__(self):
-        self.logs = open('logs.log', 'a')
+        self.logs = open("logs.log", "a")
         pass
 
     def loadDatas(self) -> Dict[str, str]:
