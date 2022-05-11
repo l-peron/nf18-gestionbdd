@@ -33,7 +33,7 @@ CREATE TABLE ComptesEpargne (
 	Statut ETAT_COMPTE NOT NULL,
 	Interet REAL NOT NULL,
 	Plafond DECIMAL(12, 2) NOT NULL CHECK (Plafond >= 300),
-Solde  DECIMAL(12, 2) NOT NULL CHECK (Solde BETWEEN 300 AND Plafond)
+    Solde  DECIMAL(12, 2) NOT NULL CHECK (Solde BETWEEN 300 AND Plafond)
 );
 
 CREATE FUNCTION IntersectionComptes()
