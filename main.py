@@ -119,8 +119,8 @@ def createProfile(num: int):
 
 
 def modifyProfile(num: int):
-    nom = str(input("Entrez votre prénom et votre nom"))
-    adresse = str(input("Entrez votre adresse"))
+    nom = str(input("Entrez votre prénom et votre nom: "))
+    adresse = str(input("Entrez votre adresse: "))
     result = req.modifyUser(num, nom, adresse)
     if result:
         print("La modification a fonctionné")
@@ -169,8 +169,8 @@ def findOperation():
 def findCompte():
     type = str(input("Quel type de compte cherchez-vous ? "))
     id = str(input("Quel est l'id de ce compte ? "))
-    result = req.getAccountById(id)
-    disp.printAccount(result, result, type, False)
+    result = req.getAccountById(id, type)
+    disp.printAccount(result, type, False)
 
 
 def makeOperation(num: int):

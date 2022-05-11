@@ -56,7 +56,7 @@ class Requests:
     def modifyUser(self, num: int, prenom: str, adresse: str) -> bool:
         try:
             self.cur.execute(
-                "UPDATE clients SET prenom=%s, adresse=%s WHERE telephone=%s",
+                "UPDATE clients SET nom=%s, adresse=%s WHERE telephone=%s",
                 (prenom, adresse, num),
             )
             return True
@@ -228,6 +228,14 @@ class Requests:
             self.utils.writeLogs(e)
             return None
 
+    def getAccountById(self, id: int, type: str) -> List[str]:
+        try:
+            self.cur.execute("SELECT * FROM comptes%s WHERE id=%s", (AsIs(type),id))
+            return self.cur.fetchone()
+        except sql.Error as e:
+            self.utils.writeLogs(e)
+            return None
+
     # SUPPRESION D'UN COMPTE
 
     def deleteAccount(self, num: int, type: str, id: int) -> bool:
@@ -318,7 +326,9 @@ class Requests:
                 else:
                     confirmation = str(input("La mise à jour du solde a échoué. Souhaitez vous supprimer l'opération (O/N)? "))
                     if confirmation in ["O", "o"]:
-                        result = req.deleteOperation(num, type, id)
+                        result = self.deleteOperation(num, type, id)
+                        if result:
+                            print("Suppression réussie")
                     return False
             else:
                 print("Aucune opération trouvée")
