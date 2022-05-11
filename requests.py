@@ -294,33 +294,31 @@ class Requests:
 
     # TRAITEMENT D'UNE OPERATION
 
-    def treatOperation(self, num: int, id: str, type: str) -> bool:
-        if type not in self.operation_type:
+    def treatOperation(self, num: int, type: str, id: int):
+        if (type not in self.operation_type):
             print("Type d'opération invalide")
             return False
 
         try:
-            self.cur.execute(
-                "SELECT montant FROM operations%s WHERE id=%s AND etat=%s AND client=%s",
-                (AsIs(type), id, self.operation_state[0], num),
-            )
+            columns = "montant, courant, revolving"
+            if (type in ["virement", "guichet"]):
+                columns = "montant, courant, revolving, epargne"
+
+            self.cur.execute("SELECT %s FROM operations%s WHERE id=%s AND etat=%s AND client=%s", (AsIs(columns), AsIs(type), id, self.operation_state[0], num))
             operation = self.cur.fetchone()
             if operation:
-                result = self.__updateSoldById(id, type, operation[0])
+                result = self.__updateSoldById(operation[1], "courant", operation[0])
+                result = self.__updateSoldById(operation[2], "revolving", operation[0]) or result
+                if (type in ["virement", "guichet"]):
+                    result = self.__updateSoldById(operation[3], "epargne", operation[0]) or result
+
                 if result:
-                    self.cur.execute(
-                        "UPDATE operations%s SET etat=%s WHERE id=%s",
-                        (AsIs(type), self.operation_state[1], id),
-                    )
+                    self.cur.execute("UPDATE operations%s SET etat=%s WHERE id=%s", (AsIs(type), self.operation_state[1], id))
                     return True
                 else:
-                    confirmation = str(
-                        input(
-                            "La mise à jour du solde a échoué. Souhaitez vous supprimer l'opération (O/N)? "
-                        )
-                    )
+                    confirmation = str(input("La mise à jour du solde a échoué. Souhaitez vous supprimer l'opération (O/N)? "))
                     if confirmation in ["O", "o"]:
-                        result = self.deleteOperation(num, type, id)
+                        result = req.deleteOperation(num, type, id)
                     return False
             else:
                 print("Aucune opération trouvée")
@@ -397,10 +395,11 @@ class Requests:
         return cle[0] + 1
 
     def __updateSoldById(self, id: int, type: str, var: int) -> bool:
+        if (id is None):
+            return False
+
         try:
-            self.cur.execute(
-                "SELECT solde FROM %s WHERE id =%s", (AsIs("comptes" + type), id)
-            )
+            self.cur.execute("SELECT solde FROM %s WHERE id=%s", (AsIs('comptes'+type), id))
             raw = self.cur.fetchone()
             self.cur.execute(
                 "UPDATE %s SET solde=%s WHERE id=%s",
