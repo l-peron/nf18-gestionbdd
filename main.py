@@ -5,7 +5,6 @@ import display as d
 req = r.Requests()
 disp = d.Display(req)
 
-
 def main():
 
     i = 0
@@ -21,7 +20,7 @@ def main():
             print("4. Supprimer un profil")
             print("5. Arreter le programme")
 
-            i = int(input())
+            i = int(input("Choississez l'option: "))
 
             if i == 5:
                 return
@@ -44,10 +43,9 @@ def main():
         req.close()
 
 
-
 def userInterface(raw: List[str]):
     i = 0
-    while i != 10:
+    while i != 12:
         print("---------------------------------------")
         print(
             f"Bonjour {raw[1]}, \n Numéro de téléphone: {raw[0]} \n Adresse: {raw[2]}"
@@ -55,14 +53,17 @@ def userInterface(raw: List[str]):
         print("---------------------------------------")
         print("1. Voir vos comptes")
         print("2. Voir vos opérations")
-        print("3. Ajouter un compte")
-        print("4. Retirer un compte")
+        print("3. Déclarer l'appartenance d'un compte")
+        print("4. Retirer l'appartenance d'un compte")
         print("5. Réaliser une opération")
         print("6. Rechercher une opération")
         print("7. Rechercher un compte")
         print("8. Créer un compte")
+        print("9. Supprimer un compte")
+        print("10. Traiter une opération")
+        print("11. Modifier l'état d'un compte")
 
-        print("10. Se Deconnecter")
+        print("12. Se Deconnecter")
 
         i = int(input("Choississez l'option: "))
 
@@ -85,6 +86,15 @@ def userInterface(raw: List[str]):
             findCompte()
         elif i==8:
             creerCompte(raw[0])
+        elif i==9:
+            disp.displayUserAccounts(raw[0])
+            supprimerCompte(raw[0])
+        elif i==10:
+            disp.displayUntreatedUserOperations(raw[0])
+            traiterOperation(raw[0])
+        elif i==11:
+            disp.displayUserAccounts(raw[0])
+            modifierStatutCompte(raw[0])
 
 # CONNEXION
 
@@ -105,7 +115,6 @@ def modifyProfile(num: int):
         print("La modification a fonctionné")
     else:
         print("La modification n'a pas fonctionné")
-    pass
 
 def deleteProfile(num: int):
     result = req.deleteUser(num)
@@ -185,6 +194,40 @@ def creerCompte(num: int):
         print("Le compte a bien été crée")
     else:
         print("La création du compte a echoué")
+
+def supprimerCompte(num: int):
+    typeCompte = str(input("Quel type de compte? "))
+    id = str(input("Quel est l'id du compte à supprimer? "))
+    result = req.deleteAccount(num, typeCompte, id)
+
+    if result:
+        print("Compte supprimé avec succès")
+    else:
+        print("Le compte n'existe pas ou la suppression du compte a échouée")
+
+def traiterOperation(num: int):
+    typeOperation = str(input("Quel est le type d'opération? "))
+    id = int(input("Quel est l'id de l'opération? "))
+
+    result = req.treatOperation(num, typeOperation, id)
+    if result:
+        print("L'opération a été traitée")
+    else:
+        confirmation = str(input("Le traitement a échoué. Souhaitez vous supprimer l'opération (O/N)? "))
+        if confirmation in ["O", "o"]:
+            result = req.deleteOperation(num, typeOperation, id)
+
+def modifierStatutCompte(num: int):
+    typeCompte = str(input("Quel type de compte voulez-vous modifier ? "))
+    id = str(input("Quel est l'id de ce compte ? "))
+    statut = str(input("Quel est le nouvel état du compte (Ouvert, Bloqué, Fermé) ? "))
+    result = req.modifyAccountStatus(num, typeCompte, id, statut)
+
+    if result:
+        return print("Le statut du compte a bien été modifé")
+    else:
+        return print("Ce compte n'existe pas ou le changement de statut a échoué")
+
 
 if __name__ == "__main__":
     main()
