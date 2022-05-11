@@ -136,7 +136,7 @@ class Requests:
         id = self.__generateAccountId()
         try:
             self.cur.execute(
-                "INSERT INTO comptesepargne VALUES (%s, current_timestamp, %s,%s,%s,%s)",
+                "INSERT INTO comptesrevolving VALUES (%s, current_timestamp, %s,%s,%s,%s)",
                 (id, self.account_state[0], taux, montant, solde),
             )
             self.addUserToAccount(num, id, "revolving")
@@ -151,7 +151,7 @@ class Requests:
         id = self.__generateAccountId()
         try:
             self.cur.execute(
-                "INSERT INTO ComptesEpargne VALUES (%s, current_timestamp, %s,%s,%s,%s)",
+                "INSERT INTO comptesepargne VALUES (%s, current_timestamp, %s,%s,%s,%s)",
                 (id, self.account_state[0], interet, plafond, solde),
             )
             self.addUserToAccount(num, id, "epargne")
