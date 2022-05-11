@@ -20,9 +20,9 @@ Le sujet porte sur la conception d'un système de gestion de compte bancaires av
 
 ### Mise en place de la BDD.
 
-Il faut executer le contenu du script [a relative link](bdd.sql) sous Postgresql.
+Il faut executer le contenu du [script SQL](bdd.sql) sous Postgresql.
 
 ### Executer l'applicatif
 
-- Remplir les différents paramètres dans le fichier [a relative link](db_config.json)
-- Exec [a relative link](main.py)
+- Remplir les différents paramètres dans le [fichier config](db_config.json)
+- Executer [main.py](main.py)
