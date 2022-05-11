@@ -1,0 +1,75 @@
+@startuml
+class Client {
+  Telephone: int {key}
+  Nom: string
+  Adresse: string
+}
+
+abstract Compte <<abstract>> {
+  DateCreation: date {key}
+  Solde: int
+  Statut: [Ouvert, Fermé, Bloqué]
+  Solde()
+}
+
+class Courant {
+  DecouvertAutorise: real {DecouvertAutorise <= 0 et Solde >= DecouvertAutorise}
+  DebutDecouvert: date
+  MinMois: int
+  MaxMois: int {MinMois <= MaxMois}
+}
+
+class Epargne {
+  Plafond: int {Plafond >= 0}
+  Interet: real {Interet >= 0}
+}
+
+class Revolving {
+  MinimumNegocie: int {Minimum <= 0, Solde >= MinimumNegocie}
+  TauxJournalier: real {TauxJournalier >= 0}
+  calculInteret()
+}
+
+abstract Operation <<abstract>> {
+  Montant: int
+  Date: date
+  Etat: [Non traitée, Traitée]
+}
+
+class Virement {
+  etatOperationVirement()
+}
+
+class CarteBleue {
+  etatOperationCarteBleue()
+}
+
+class Guichet {
+  etatOperationGuichet()
+}
+
+class Cheque {
+  etatOperationCheque()
+}
+
+Client "1" -- "0..n" Operation : effectue >
+Client "1..n" -- "0..n" Compte : a >
+Virement "0..n" --- "1" Courant : affecte >
+Virement "0..n" --- "1" Epargne : affecte >
+Virement "0..n" --- "1" Revolving : affecte >
+Guichet "0..n" --- "1" Courant : affecte >
+Guichet "0..n" --- "1" Epargne : affecte >
+Guichet "0..n" --- "1" Revolving : affecte >
+CarteBleue "0..n" --- "1" Courant : affecte >
+CarteBleue "0..n" --- "1" Revolving : affecte >
+Cheque "0..n" --- "1" Courant : affecte >
+Cheque "0..n" --- "1" Revolving : affecte >
+
+Operation <|-- Virement
+Operation <|-- Guichet
+Operation <|-- CarteBleue
+Operation <|-- Cheque
+Courant --|> Compte
+Epargne --|> Compte
+Revolving --|> Compte
+@enduml
