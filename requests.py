@@ -73,8 +73,10 @@ class Requests:
             return False
 
     def getUserAccounts(self, num: int, type: str) -> List[List[str]]:
-        if type not in self.account_type:
-            return None
+        if (type not in self.account_type):
+            print("Type de compte invalide")
+            return False
+        
         try:
             self.cur.execute(
                 "SELECT * FROM appartenance INNER JOIN %s ON appartenance.%s = %s.id WHERE client=%s",
@@ -83,7 +85,7 @@ class Requests:
             return self.cur.fetchall()
         except sql.Error as e:
             self.utils.writeLogs(e)
-            return None
+            return False
 
     def getUserOperations(self, num: int, type: str) -> List[List[str]]:
         if (type not in self.operation_type):
@@ -98,7 +100,7 @@ class Requests:
             return self.cur.fetchall()
         except sql.Error as e:
             self.utils.writeLogs(e)
-            return None
+            return False
 
     def getUntreatedUserOperations(self, num: int, type: str) -> List[List[str]]:
         if (type not in self.operation_type):
@@ -113,7 +115,7 @@ class Requests:
             return self.cur.fetchall()
         except sql.Error as e:
             self.utils.writeLogs(e)
-            return None
+            return False
 
 
     # CREATION DES COMPTES BANCAIRES
@@ -278,7 +280,7 @@ class Requests:
             return self.cur.fetchone()
         except sql.Error as e:
             self.utils.writeLogs(e)
-            return None
+            return False
 
     # TRAITEMENT D'UNE OPERATION
 
@@ -296,7 +298,9 @@ class Requests:
                     self.cur.execute("UPDATE operations%s SET etat=%s WHERE id=%s", (AsIs(type), operation_state[1], id))
                     return True
                 else:
-                    print("Mise à jour du solde a échoué")
+                    confirmation = str(input("La mise à jour du solde a échoué. Souhaitez vous supprimer l'opération (O/N)? "))
+                    if confirmation in ["O", "o"]:
+                        result = req.deleteOperation(num, typeOperation, id)
                     return False
             else:
                 print("Aucune opération trouvée")
@@ -306,8 +310,8 @@ class Requests:
             return False
 
     def deleteOperation(self, num: int, type: str, id: int):
-        if (type not in self.account_type):
-            print("Type de compte invalide")
+        if (type not in self.operation_type):
+            print("Type d'opération invalide")
             return False
 
         try:

@@ -45,7 +45,7 @@ def main():
 
 def userInterface(raw: List[str]):
     i = 0
-    while i != 12:
+    while i != 13:
         print("---------------------------------------")
         print(
             f"Bonjour {raw[1]}, \n Numéro de téléphone: {raw[0]} \n Adresse: {raw[2]}"
@@ -53,17 +53,18 @@ def userInterface(raw: List[str]):
         print("---------------------------------------")
         print("1. Voir vos comptes")
         print("2. Voir vos opérations")
-        print("3. Déclarer l'appartenance d'un compte")
-        print("4. Retirer l'appartenance d'un compte")
-        print("5. Réaliser une opération")
-        print("6. Rechercher une opération")
-        print("7. Rechercher un compte")
-        print("8. Créer un compte")
-        print("9. Supprimer un compte")
-        print("10. Traiter une opération")
-        print("11. Modifier l'état d'un compte")
+        print("3. Créer un compte")
+        print("4. Supprimer un compte")
+        print("5. Déclarer l'appartenance d'un compte")
+        print("6. Retirer l'appartenance d'un compte")
+        print("7. Modifier l'état d'un compte")
+        print("8. Créer une opération")
+        print("9. Traiter une opération")
+        print("10. Supprimer une opération")
+        print("11. Rechercher un compte")
+        print("12. Rechercher une opération")
 
-        print("12. Se Deconnecter")
+        print("13. Se Deconnecter")
 
         i = int(input("Choississez l'option: "))
 
@@ -72,29 +73,31 @@ def userInterface(raw: List[str]):
         elif i==2:
             disp.displayUserOperations(raw[0])
         elif i == 3:
-            disp.displayAllAccounts()
-            addUser(raw[0])
+            creerCompte(raw[0])
         elif i == 4:
             disp.displayUserAccounts(raw[0])
-            removeAccount(raw[0])
-        elif i==5:
-            makeOperation(raw[0])
-            pass
-        elif i==6:
-            findOperation()
-        elif i==7:
-            findCompte()
-        elif i==8:
-            creerCompte(raw[0])
-        elif i==9:
-            disp.displayUserAccounts(raw[0])
             supprimerCompte(raw[0])
-        elif i==10:
-            disp.displayUntreatedUserOperations(raw[0])
-            traiterOperation(raw[0])
-        elif i==11:
+        elif i==5:
+            disp.displayAllAccounts()
+            addUser(raw[0])
+        elif i==6:
+            disp.displayUserAccounts(raw[0])
+            removeAccount(raw[0])
+        elif i==7:
             disp.displayUserAccounts(raw[0])
             modifierStatutCompte(raw[0])
+        elif i==8:
+            makeOperation(raw[0])
+        elif i==9:
+            disp.displayUntreatedUserOperations(raw[0])
+            traiterOperation(raw[0])
+        elif i==10:
+            disp.displayUserOperations(raw[0])
+            supprimerOperation(raw[0])
+        elif i==11:
+            findCompte()
+        elif i==12:
+            findOperation()
 
 # CONNEXION
 
@@ -203,7 +206,17 @@ def supprimerCompte(num: int):
     if result:
         print("Compte supprimé avec succès")
     else:
-        print("Le compte n'existe pas ou la suppression du compte a échouée")
+        print("Le compte n'existe pas ou la suppression a échouée")
+
+def supprimerOperation(num: int):
+    typeOperation = str(input("Quel type d'opération? "))
+    id = str(input("Quel est l'id de l'opération à supprimer? "))
+    result = req.deleteOperation(num, typeOperation, id)
+
+    if result:
+        print("Opération supprimée avec succès")
+    else:
+        print("L'opération n'existe pas ou la suppression a échouée")
 
 def traiterOperation(num: int):
     typeOperation = str(input("Quel est le type d'opération? "))
@@ -213,9 +226,7 @@ def traiterOperation(num: int):
     if result:
         print("L'opération a été traitée")
     else:
-        confirmation = str(input("Le traitement a échoué. Souhaitez vous supprimer l'opération (O/N)? "))
-        if confirmation in ["O", "o"]:
-            result = req.deleteOperation(num, typeOperation, id)
+        print("Le traitement de l'opération a échoué")
 
 def modifierStatutCompte(num: int):
     typeCompte = str(input("Quel type de compte voulez-vous modifier ? "))
