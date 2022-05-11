@@ -9,18 +9,18 @@ CREATE TABLE Clients (
 
 CREATE TABLE ComptesCourant (
 	Id INT PRIMARY KEY,
-	DateCreation DATE UNIQUE,
+	DateCreation timestamp UNIQUE,
 	Statut ETAT_COMPTE NOT NULL,
 	MaxMois DECIMAL(12, 2) NOT NULL,
 	MinMois DECIMAL(12, 2) NOT NULL CHECK (MinMois <= MaxMois),
-Solde DECIMAL(12, 2) NOT NULL CHECK (Solde >= DecouvertAutorise),
-DecouvertAutorise DECIMAL(12, 2) NOT NULL CHECK (DecouvertAutorise <= 0),
-DebutDecouvert DATE
+    Solde DECIMAL(12, 2) NOT NULL CHECK (Solde >= DecouvertAutorise),
+    DecouvertAutorise DECIMAL(12, 2) NOT NULL CHECK (DecouvertAutorise <= 0),
+    DebutDecouvert timestamp
 );
 
 CREATE TABLE ComptesRevolving (
 	Id INT PRIMARY KEY,
-	DateCreation DATE UNIQUE,
+	DateCreation timestamp UNIQUE,
 	Statut ETAT_COMPTE NOT NULL,
 	TauxJournalier REAL NOT NULL,
 	MontantNegocie DECIMAL(12, 2) NOT NULL CHECK (MontantNegocie < 0),
@@ -29,7 +29,7 @@ CREATE TABLE ComptesRevolving (
 
 CREATE TABLE ComptesEpargne (
 	Id INT PRIMARY KEY,
-	DateCreation DATE UNIQUE,
+	DateCreation timestamp UNIQUE,
 	Statut ETAT_COMPTE NOT NULL,
 	Interet REAL NOT NULL,
 	Plafond DECIMAL(12, 2) NOT NULL CHECK (Plafond >= 300),
