@@ -13,7 +13,7 @@ class Requests:
         self.conn.autocommit = True
         self.cur = self.__getCursor()
         self.account_state = ["Ouvert", "Bloqué", "Fermé"]
-        self.operation_state = ["Traitée", "Non Traitée"]
+        self.operation_state = ["Non Traitée", "Traitée"]
         self.account_type = ["courant", "revolving", "epargne"]
         self.operation_type = ["cartebleue", "virement", "cheque", "guichet"]
 
@@ -40,7 +40,7 @@ class Requests:
     # GESTION D'UN UTILISATEUR
 
     def getUserByNum(self, num: int) -> List[str]:
-        self.cur.execute("SELECT * FROM clients WHERE telephone = %s", (num,))
+        self.cur.execute("SELECT * FROM clients WHERE telephone=%s", (num,))
         return self.cur.fetchone()
 
     def createUser(self, num: int, prenom: str, adresse: str) -> bool:
@@ -86,12 +86,29 @@ class Requests:
             return None
 
     def getUserOperations(self, num: int, type: str) -> List[List[str]]:
-        if type not in self.operation_type:
-            return None
+        if (type not in self.operation_type):
+            print("Type d'opération invalide")
+            return False
+
         try:
             self.cur.execute(
                 "SELECT * FROM %s WHERE client=%s",
                 (AsIs("operations" + type), num)
+            )
+            return self.cur.fetchall()
+        except sql.Error as e:
+            self.utils.writeLogs(e)
+            return None
+
+    def getUntreatedUserOperations(self, num: int, type: str) -> List[List[str]]:
+        if (type not in self.operation_type):
+            print("Type d'opération invalide")
+            return False
+
+        try:
+            self.cur.execute(
+                "SELECT * FROM %s WHERE client=%s AND etat=%s",
+                (AsIs("operations" + type), num, self.operation_state[0])
             )
             return self.cur.fetchall()
         except sql.Error as e:
@@ -114,9 +131,7 @@ class Requests:
             self.utils.writeLogs(e)
             return False
 
-    def createRevolvingAccount(
-        self, num: int, solde: int, taux: int, montant: int
-    ) -> bool:
+    def createRevolvingAccount(self, num: int, solde: int, taux: int, montant: int) -> bool:
         id = self.__generateAccountId()
         try:
             self.cur.execute(
@@ -129,9 +144,7 @@ class Requests:
             self.utils.writeLogs(e)
             return False
 
-    def createEpargneAccount(
-        self, num: int, interet: int, plafond: int, solde: int
-    ) -> bool:
+    def createEpargneAccount(self, num: int, interet: int, plafond: int, solde: int) -> bool:
         id = self.__generateAccountId()
         try:
             self.cur.execute(
@@ -149,7 +162,7 @@ class Requests:
     def modifyCourantAccount(self, id: int, decouvert: int) -> bool:
         try:
             self.cur.execute(
-                "UPDATE comptescourant SET decouvert=%s WHERE id=%s", (decouvert, id)
+                "UPDATE comptescourant SET decouvert=%s WHERE id=%s AND id IN (SELECT courant FROM appartenance WHERE client=%s)", (decouvert, id, num)
             )
             return True
         except sql.Error as e:
@@ -159,7 +172,7 @@ class Requests:
     def modifyRevolvingAccount(self, id: int, taux: int) -> bool:
         try:
             self.cur.execute(
-                "UPDATE comptesrevolving SET taux=%s WHERE id=%s", (id, taux)
+                "UPDATE comptesrevolving SET taux=%s WHERE id=%s AND id IN (SELECT courant FROM appartenance WHERE client=%s)", (id, taux, num)
             )
             return True
         except sql.Error as e:
@@ -169,8 +182,25 @@ class Requests:
     def modifyEpargneAccount(self, num: int, interet: int) -> bool:
         try:
             self.cur.execute(
-                "UPDATE comptesrevolving SET interet=%s WHERE id=%s", (id, interet)
+                "UPDATE comptesrevolving SET interet=%s WHERE id=%s AND id IN (SELECT revolving FROM appartenance WHERE client=%s)", (id, interet, num)
             )
+            return True
+        except sql.Error as e:
+            self.utils.writeLogs(e)
+            return False
+
+    def modifyAccountStatus(self, num: int, type: str, id: int, statut: str) -> bool:
+        if (type not in self.account_type):
+            print("Type de compte invalide")
+            return False
+
+        if (statut not in self.account_state):
+            print("Etat de compte invalide")
+            return False
+
+        try:
+
+            self.cur.execute("UPDATE comptes%s SET statut=%s WHERE id=%s AND id IN (SELECT %s FROM appartenance WHERE client=%s)", (AsIs(type), statut, id, AsIs(type), num))
             return True
         except sql.Error as e:
             self.utils.writeLogs(e)
@@ -179,8 +209,10 @@ class Requests:
     # RECUPERATION DES COMPTES BANCAIRES
 
     def getAccountsByType(self, type: str):
-        if type not in self.account_type:
-            return None
+        if (type not in self.account_type):
+            print("Type de compte invalide")
+            return False
+
         try:
             self.cur.execute("SELECT * FROM comptes%s", (AsIs(type),))
             return self.cur.fetchall()
@@ -190,12 +222,29 @@ class Requests:
 
     # SUPPRESION D'UN COMPTE
 
-    def deleteAccount(self, id: int):
-        pass
+    def deleteAccount(self, num: int, type: str, id: int):
+        if (type not in self.account_type):
+            print("Type de compte invalide")
+            return False
+
+        try:
+            self.cur.execute("DELETE FROM comptes%s WHERE id=%s AND id IN (SELECT %s FROM appartenance WHERE client=%s)", (AsIs(type), id, AsIs(type), num))
+            return True
+        except sql.Error as e:
+            self.utils.writeLogs(e)
+            return False
 
     # Insertion d'une opération
 
     def createOperation(self, compte: int, client: int, op_type: str, acc_type: str, montant: int):
+        if (acc_type not in self.account_type):
+            print("Type de compte invalide")
+            return False
+
+        if (op_type not in self.operation_type):
+            print("Type d'opération invalide")
+            return False
+
         id = self.__generateOperationId()
         try:
             self.cur.execute(
@@ -210,17 +259,17 @@ class Requests:
                     client
                 ),
             )
-            self.__updateSoldById(compte, acc_type, montant)
             return True
         except sql.Error as e:
-            print(e)
             self.utils.writeLogs(e)
             return False
         pass
 
     def getOperationByDate(self, date: str, type: str):
-        if type not in self.operation_type:
-            return None
+        if (type not in self.operation_type):
+            print("Type d'opération invalide")
+            return False
+
         try:
             self.cur.execute(
                 "SELECT * FROM %s WHERE date=%s",
@@ -231,12 +280,51 @@ class Requests:
             self.utils.writeLogs(e)
             return None
 
+    # TRAITEMENT D'UNE OPERATION
+
+    def treatOperation(self, num: int, id: str, type: str):
+        if (type not in self.operation_type):
+            print("Type d'opération invalide")
+            return False
+
+        try:
+            self.cur.execute("SELECT * FROM operations%s WHERE id=%s AND etat=%s AND client=%s", (AsIs(type), id, operation_state[0], num))
+            operation = self.cur.fetchone()
+            if operation:
+                result = self.__updateSoldById(compte, acc_type, montant)
+                if result:
+                    self.cur.execute("UPDATE operations%s SET etat=%s WHERE id=%s", (AsIs(type), operation_state[1], id))
+                    return True
+                else:
+                    print("Mise à jour du solde a échoué")
+                    return False
+            else:
+                print("Aucune opération trouvée")
+                return False
+        except sql.Error as e:
+            self.utils.writeLogs(e)
+            return False
+
+    def deleteOperation(self, num: int, type: str, id: int):
+        if (type not in self.account_type):
+            print("Type de compte invalide")
+            return False
+
+        try:
+            self.cur.execute("DELETE FROM operations%s WHERE id=%s AND client=%s", (AsIs(type), id, num))
+            return True
+        except sql.Error as e:
+            self.utils.writeLogs(e)
+            return False
+
 
     # GESTION DES RELATIONS COMPTES - CLIENTS
 
     def addUserToAccount(self, num: int, id: int, type: str) -> bool:
-        if type not in self.account_type:
-            return None
+        if (type not in self.account_type):
+            print("Type de compte invalide")
+            return False
+
         try:
             self.cur.execute(
                 "INSERT INTO appartenance (client, %s) VALUES (%s, %s)",
@@ -244,11 +332,14 @@ class Requests:
             )
             return True
         except sql.Error as e:
+            self.utils.writeLogs(e)
             return False
 
     def removeUserFromAccount(self, num: int, id: int, type: str) -> bool:
-        if type not in self.account_type:
-            return None
+        if (type not in self.account_type):
+            print("Type de compte invalide")
+            return False
+
         try:
             self.cur.execute(
                 "DELETE FROM appartenance WHERE client=%s AND %s=%s",
@@ -256,6 +347,7 @@ class Requests:
             )
             return True
         except sql.Error as e:
+            self.utils.writeLogs(e)
             return False
 
     # GENERATIONS CLES COMPTES ET OPERATIONS
@@ -293,5 +385,5 @@ class Requests:
             )
             return True
         except sql.Error as e:
-            print(e)
+            self.utils.writeLogs(e)
             return False

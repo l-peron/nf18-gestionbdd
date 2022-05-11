@@ -58,6 +58,15 @@ class Display:
                 for raw in raws:
                     self.printOperation(raw, type)
 
+    def displayUntreatedUserOperations(self, num: int):
+        raws=[]
+        for type in self.operation_type:
+            raws = self.req.getUntreatedUserOperations(num, type)
+            print(f'---------- Opérations {type} non traitées ----------')
+            if raws:
+                for raw in raws:
+                    self.printOperation(raw, type)
+                    
     def displayAllAccounts(self):
         raws = []
         print("---- Affichage de tous les comptes bancaires ----")
