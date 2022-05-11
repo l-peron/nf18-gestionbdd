@@ -16,7 +16,9 @@ Le sujet porte sur la conception d'un système de gestion de compte bancaires av
 - Mise en place de différents types d'opérations ayant chacune leur spécificité
 - Mise en place de gestion des utilisateurs et des relations entre utilisateurs/comptes/opérations
 
-![](UML.png)
+    <img src="UML.png" width="500"/>
+
+    _Diagramme UML_
 
 ## How to run
 
