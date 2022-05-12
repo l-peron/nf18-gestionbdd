@@ -166,5 +166,18 @@ RETURNS TRIGGER as $set_dd$
 		RETURN NEW;
 	END;
 $set_dd$ LANGUAGE plpgsql;
-
 CREATE TRIGGER update_minmax_courant AFTER UPDATE OF solde ON comptescourant FOR EACH ROW EXECUTE FUNCTION set_minmax_courant();
+
+CREATE OR REPLACE FUNCTION appliquer_taux_revolving()
+RETURNS TRIGGER as $tr$
+DECLARE diff INT;
+	BEGIN
+		SELECT DATE_PART('day', current_timestamp - NEW.dernieretransaction) INTO diff;
+		NEW.solde = NEW.solde * (NEW.tauxjournalier ^ diff);
+		IF (diff > 0) THEN 
+			NEW.dernieretransaction = current_timestamp;
+		END IF;
+		RETURN NEW;
+	END; 
+$tr$ LANGUAGE plpgsql;
+CREATE TRIGGER taux_revolving BEFORE UPDATE ON comptesrevolving FOR EACH ROW EXECUTE FUNCTION appliquer_taux_revolving();

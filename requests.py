@@ -130,13 +130,11 @@ class Requests:
             self.utils.writeLogs(e)
             return False
 
-    def createRevolvingAccount(
-        self, num: int, solde: int, taux: int, montant: int
-    ) -> bool:
+    def createRevolvingAccount(self, num: int, solde: int, taux: int, montant: int) -> bool:
         id = self.__generateAccountId()
         try:
             self.cur.execute(
-                "INSERT INTO comptesrevolving VALUES (%s, current_timestamp, %s,%s,%s,%s)",
+                "INSERT INTO comptesrevolving VALUES (%s, current_timestamp, %s,%s,%s,%s,current_timestamp)",
                 (id, self.account_state[0], taux, montant, solde),
             )
             self.addUserToAccount(num, id, "revolving")
@@ -145,9 +143,7 @@ class Requests:
             self.utils.writeLogs(e)
             return False
 
-    def createEpargneAccount(
-        self, num: int, interet: int, plafond: int, solde: int
-    ) -> bool:
+    def createEpargneAccount(self, num: int, interet: int, plafond: int, solde: int) -> bool:
         id = self.__generateAccountId()
         try:
             self.cur.execute(
