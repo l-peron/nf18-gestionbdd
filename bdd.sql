@@ -175,9 +175,10 @@ DECLARE diff INT;
 		SELECT DATE_PART('day', current_timestamp - NEW.dernieretransaction) INTO diff;
 		NEW.solde = NEW.solde * (NEW.tauxjournalier ^ diff);
 		IF (diff > 0) THEN 
-			NEW.dernieretransaction = current_timestamp;
+			NEW.dernieretransaction = NEW.dernieretransaction + diff * 86400000000;
 		END IF;
 		RETURN NEW;
 	END; 
 $tr$ LANGUAGE plpgsql;
+CREATE TRIGGER taux_revolving BEFORE UPDATE ON comptesrevolving FOR EACH ROW EXECUTE FUNCTION appliquer_taux_revolving();
 CREATE TRIGGER taux_revolving BEFORE UPDATE ON comptesrevolving FOR EACH ROW EXECUTE FUNCTION appliquer_taux_revolving();
